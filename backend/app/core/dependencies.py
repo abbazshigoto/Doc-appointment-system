@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 
 from app.core.security import decode_access_token
+from app.modules.users.models import UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -21,9 +22,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     return payload
 
 
-def require_role(*allowed_roles: str) -> Callable:
+def require_role(*allowed_roles: UserRole) -> Callable:
+    allowed_values = {role.value for role in allowed_roles}
+
     def checker(user: dict = Depends(get_current_user)) -> dict:
-        if user.get("role") not in allowed_roles:
+        if user.get("role") not in allowed_values:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient permissions",
