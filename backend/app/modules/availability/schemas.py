@@ -1,0 +1,26 @@
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, field_validator
+
+
+class AvailabilityWindowRequest(BaseModel):
+    start_time: datetime
+    end_time: datetime
+
+    @field_validator("end_time")
+    @classmethod
+    def end_after_start(cls, end_time: datetime, info) -> datetime:
+        start_time = info.data.get("start_time")
+        if start_time is not None and end_time <= start_time:
+            raise ValueError("end_time must be after start_time")
+        return end_time
+
+
+class AvailabilityWindowResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    doctor_id: int
+    start_time: datetime
+    end_time: datetime
+    created_at: datetime
