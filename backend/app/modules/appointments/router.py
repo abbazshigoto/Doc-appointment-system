@@ -9,11 +9,17 @@ from app.core.dependencies import get_current_user, require_role
 from app.core.redis import get_redis
 from app.modules.appointments.hold_store import AppointmentHoldStore, HOLD_TTL_SECONDS
 from app.modules.appointments.repository import AppointmentRepository
-from app.modules.appointments.schemas import AppointmentBookRequest, AppointmentHoldResponse, AppointmentResponse
+from app.modules.appointments.schemas import (
+    AppointmentBookRequest,
+    AppointmentHoldResponse,
+    AppointmentResponse,
+    BookedSlotResponse,
+)
 from app.modules.appointments.service import (
     AppointmentNotFoundError,
     AppointmentService,
     DoctorNotFoundError,
+    DoctorProfileRequiredError,
     HoldExpiredOrNotFoundError,
     HoldOwnedBySomeoneElseError,
     OutsideAvailabilityError,
@@ -128,6 +134,32 @@ async def list_my_appointments(
 ) -> list[AppointmentResponse]:
     appointments = await service.list_own_appointments(int(user["sub"]))
     return [AppointmentResponse.model_validate(appointment) for appointment in appointments]
+
+
+@router.get(
+    "/doctor/me",
+    response_model=list[AppointmentResponse],
+    dependencies=[Depends(require_role(UserRole.DOCTOR))],
+)
+async def list_my_doctor_appointments(
+    user: dict = Depends(get_current_user),
+    service: AppointmentService = Depends(get_appointment_service),
+) -> list[AppointmentResponse]:
+    try:
+        appointments = await service.list_appointments_for_doctor_user(int(user["sub"]))
+    except DoctorProfileRequiredError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Create your doctor profile first")
+    return [AppointmentResponse.model_validate(appointment) for appointment in appointments]
+
+
+@router.get("/doctor/{doctor_id}/booked-slots", response_model=list[BookedSlotResponse])
+async def list_booked_slots(
+    doctor_id: int,
+    _: dict = Depends(get_current_user),
+    service: AppointmentService = Depends(get_appointment_service),
+) -> list[BookedSlotResponse]:
+    appointments = await service.list_booked_slots_for_doctor(doctor_id)
+    return [BookedSlotResponse.model_validate(appointment) for appointment in appointments]
 
 
 @router.post(

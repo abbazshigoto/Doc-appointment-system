@@ -41,6 +41,10 @@ class HoldOwnedBySomeoneElseError(Exception):
     pass
 
 
+class DoctorProfileRequiredError(Exception):
+    pass
+
+
 class AppointmentService:
     def __init__(
         self,
@@ -104,6 +108,15 @@ class AppointmentService:
 
     async def list_own_appointments(self, patient_id: int) -> list[Appointment]:
         return await self.repository.get_by_patient_id(patient_id)
+
+    async def list_appointments_for_doctor_user(self, user_id: int) -> list[Appointment]: 
+        doctor = await self.doctor_repository.get_by_user_id(user_id)
+        if doctor is None:
+            raise DoctorProfileRequiredError(user_id)
+        return await self.repository.get_by_doctor_id(doctor.id)
+
+    async def list_booked_slots_for_doctor(self, doctor_id: int) -> list[Appointment]:
+        return await self.repository.get_confirmed_by_doctor_id(doctor_id)
 
     async def cancel_own_appointment(self, patient_id: int, appointment_id: int) -> Appointment:
         appointment = await self.repository.get_by_id(appointment_id)

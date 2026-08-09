@@ -38,6 +38,20 @@ export interface DoctorResponse {
   created_at: string;
 }
 
+export interface DoctorProfileRequest {
+  specialty: string;
+  bio: string | null;
+  years_of_experience: number;
+  consultation_fee: number;
+}
+
+export type DoctorProfileUpdateRequest = Partial<DoctorProfileRequest>;
+
+export interface AvailabilityWindowRequest {
+  start_time: string;
+  end_time: string;
+}
+
 export interface AvailabilityWindowResponse {
   id: number;
   doctor_id: number;
@@ -53,14 +67,26 @@ export interface AppointmentBookRequest {
   start_time: string;
 }
 
+export interface AppointmentPatientSummary {
+  id: number;
+  full_name: string;
+  email: string;
+}
+
 export interface AppointmentResponse {
   id: number;
   doctor_id: number;
   patient_id: number;
+  patient: AppointmentPatientSummary;
   start_time: string;
   end_time: string;
   status: AppointmentStatus;
   created_at: string;
+}
+
+export interface BookedSlotResponse {
+  start_time: string;
+  end_time: string;
 }
 
 export interface NotificationResponse {

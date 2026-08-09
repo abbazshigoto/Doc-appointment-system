@@ -76,7 +76,7 @@ function NotificationList() {
   );
 }
 
-export default function NotificationsPage() {
+export default function DoctorNotificationsPage() {
   return (
     <div style={{ padding: "1.5rem" }}>
       <h1 style={{ fontSize: "1.3rem", marginBottom: "1rem" }}>Notifications</h1>

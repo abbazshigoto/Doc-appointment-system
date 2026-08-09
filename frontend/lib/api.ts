@@ -1,7 +1,11 @@
 import type {
   AppointmentBookRequest,
   AppointmentResponse,
+  AvailabilityWindowRequest,
   AvailabilityWindowResponse,
+  BookedSlotResponse,
+  DoctorProfileRequest,
+  DoctorProfileUpdateRequest,
   DoctorResponse,
   NotificationResponse,
   RegisterRequest,
@@ -122,4 +126,54 @@ export function cancelAppointment(token: string, appointmentId: number): Promise
 
 export function listMyNotifications(token: string): Promise<NotificationResponse[]> {
   return apiFetch<NotificationResponse[]>("/notifications/me", { token });
+}
+
+export function getMyDoctorProfile(token: string): Promise<DoctorResponse> {
+  return apiFetch<DoctorResponse>("/doctors/me", { token });
+}
+
+export function createDoctorProfile(token: string, data: DoctorProfileRequest): Promise<DoctorResponse> {
+  return apiFetch<DoctorResponse>("/doctors/me", { method: "POST", token, json: data });
+}
+
+export function updateDoctorProfile(
+  token: string,
+  data: DoctorProfileUpdateRequest
+): Promise<DoctorResponse> {
+  return apiFetch<DoctorResponse>("/doctors/me", { method: "PATCH", token, json: data });
+}
+
+export function listMyAvailability(token: string): Promise<AvailabilityWindowResponse[]> {
+  return apiFetch<AvailabilityWindowResponse[]>("/availability/me", { token });
+}
+
+export function createAvailabilityWindow(
+  token: string,
+  data: AvailabilityWindowRequest
+): Promise<AvailabilityWindowResponse> {
+  return apiFetch<AvailabilityWindowResponse>("/availability/me", { method: "POST", token, json: data });
+}
+
+export function deleteAvailabilityWindow(token: string, windowId: number): Promise<null> {
+  return apiFetch<null>(`/availability/me/${windowId}`, { method: "DELETE", token });
+}
+
+export function listMyDoctorAppointments(token: string): Promise<AppointmentResponse[]> {
+  return apiFetch<AppointmentResponse[]>("/appointments/doctor/me", { token });
+}
+
+export function listBookedSlots(token: string, doctorId: number): Promise<BookedSlotResponse[]> {
+  return apiFetch<BookedSlotResponse[]>(`/appointments/doctor/${doctorId}/booked-slots`, { token });
+}
+
+export function listAllUsers(token: string): Promise<UserResponse[]> {
+  return apiFetch<UserResponse[]>("/users", { token });
+}
+
+export function deactivateUser(token: string, userId: number): Promise<UserResponse> {
+  return apiFetch<UserResponse>(`/users/${userId}/deactivate`, { method: "POST", token });
+}
+
+export function reactivateUser(token: string, userId: number): Promise<UserResponse> {
+  return apiFetch<UserResponse>(`/users/${userId}/reactivate`, { method: "POST", token });
 }

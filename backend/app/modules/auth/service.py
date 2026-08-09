@@ -12,6 +12,10 @@ class InvalidCredentialsError(Exception):
     pass
 
 
+class AccountDeactivatedError(Exception):
+    pass
+
+
 class AuthService:
     def __init__(self, repository: AuthRepository):
         self.repository = repository
@@ -33,6 +37,8 @@ class AuthService:
         user = await self.repository.get_by_email(email)
         if user is None or not verify_password(password, user.hashed_password):
             raise InvalidCredentialsError()
+        if not user.is_active:
+            raise AccountDeactivatedError()
         return user
 
     async def login(self, email: str, password: str) -> str:

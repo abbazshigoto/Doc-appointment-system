@@ -79,6 +79,13 @@ a {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 2rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+a.card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .card h1 {
@@ -134,11 +141,25 @@ a {
   cursor: pointer;
   background: var(--accent);
   color: var(--accent-foreground);
+  transition: opacity 0.15s ease, transform 0.05s ease;
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.button-danger {
+  background: var(--danger);
+  color: #ffffff;
 }
 
 .button-link {
@@ -148,6 +169,37 @@ a {
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.button-link:hover:not(:disabled) {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.button-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-link-danger {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.button-link-danger:hover:not(:disabled) {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.button-link-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .error-banner {
@@ -156,6 +208,144 @@ a {
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link:hover {
+  background: var(--border);
+  color: var(--foreground);
+}
+
+.nav-link-active,
+.nav-link-active:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-weight: 600;
+}
+
+.profile-link {
+  font-size: 0.85rem;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.profile-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sidebar-logout:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+  animation: fade-in 0.12s ease;
+}
+
+.modal-card {
+  animation: modal-in 0.15s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.badge {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.skeleton {
+  background: var(--border);
+  border-radius: 6px;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+tbody tr {
+  transition: background-color 0.1s ease;
+}
+
+tbody tr:hover {
+  background: var(--surface);
 }
 
 .footnote {

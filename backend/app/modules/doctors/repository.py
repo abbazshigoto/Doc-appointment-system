@@ -28,8 +28,10 @@ class DoctorRepository:
     async def create(self, doctor: Doctor) -> Doctor:
         self.db.add(doctor)
         await self.db.commit()
-        return await self.get_by_id(doctor.id)
+        await self.db.refresh(doctor, attribute_names=["user"])
+        return doctor
 
     async def update(self, doctor: Doctor) -> Doctor:
         await self.db.commit()
-        return await self.get_by_id(doctor.id)
+        await self.db.refresh(doctor, attribute_names=["user"])
+        return doctor

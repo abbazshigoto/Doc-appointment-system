@@ -2,9 +2,10 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, func, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.modules.users.models import User
 
 
 class AppointmentStatus(str, enum.Enum):
@@ -36,3 +37,5 @@ class Appointment(Base):
         default=AppointmentStatus.CONFIRMED,
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    patient: Mapped[User] = relationship(lazy="joined")

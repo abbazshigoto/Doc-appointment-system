@@ -6,7 +6,12 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.modules.auth.repository import AuthRepository
 from app.modules.auth.schemas import RegisterRequest, TokenResponse, UserResponse
-from app.modules.auth.service import AuthService, EmailAlreadyRegisteredError, InvalidCredentialsError
+from app.modules.auth.service import (
+    AccountDeactivatedError,
+    AuthService,
+    EmailAlreadyRegisteredError,
+    InvalidCredentialsError,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -37,6 +42,8 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    except AccountDeactivatedError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account has been deactivated")
     return TokenResponse(access_token=token)
 
 
