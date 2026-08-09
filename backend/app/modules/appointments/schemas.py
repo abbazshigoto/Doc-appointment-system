@@ -10,6 +10,12 @@ class AppointmentBookRequest(BaseModel):
     start_time: datetime
 
 
+class AppointmentHoldResponse(BaseModel):
+    doctor_id: int
+    start_time: datetime
+    expires_in_seconds: int
+
+
 class AppointmentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
