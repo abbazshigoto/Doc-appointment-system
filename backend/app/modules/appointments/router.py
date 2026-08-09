@@ -1,7 +1,9 @@
+from arq.connections import ArqRedis
 from fastapi import APIRouter, Depends, HTTPException, status
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.arq_pool import get_arq_redis
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_role
 from app.core.redis import get_redis
@@ -28,12 +30,14 @@ router = APIRouter(prefix="/appointments", tags=["appointments"])
 def get_appointment_service(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    arq_redis: ArqRedis = Depends(get_arq_redis),
 ) -> AppointmentService:
     return AppointmentService(
         AppointmentRepository(db),
         DoctorRepository(db),
         AvailabilityRepository(db),
         AppointmentHoldStore(redis),
+        arq_redis,
     )
 
 

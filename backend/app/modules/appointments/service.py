@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from arq.connections import ArqRedis
 from sqlalchemy.exc import IntegrityError
 
 from app.modules.appointments.hold_store import AppointmentHoldStore
@@ -47,11 +48,13 @@ class AppointmentService:
         doctor_repository: DoctorRepository,
         availability_repository: AvailabilityRepository,
         hold_store: AppointmentHoldStore,
+        arq_redis: ArqRedis,
     ):
         self.repository = repository
         self.doctor_repository = doctor_repository
         self.availability_repository = availability_repository
         self.hold_store = hold_store
+        self.arq_redis = arq_redis
 
     async def book_appointment(self, patient_id: int, data: AppointmentBookRequest) -> Appointment:
         doctor = await self.doctor_repository.lock_for_update(data.doctor_id)
@@ -76,9 +79,12 @@ class AppointmentService:
             end_time=end_time,
         )
         try:
-            return await self.repository.create(appointment)
+            created = await self.repository.create(appointment)
         except IntegrityError as exc:
             raise SlotConflictError(data.doctor_id) from exc
+
+        await self.arq_redis.enqueue_job("notify_doctor_of_booking", created.id)
+        return created
 
     async def hold_slot(self, patient_id: int, doctor_id: int, start_time: datetime) -> None:
         acquired = await self.hold_store.hold(doctor_id, start_time, patient_id)
@@ -103,4 +109,7 @@ class AppointmentService:
         appointment = await self.repository.get_by_id(appointment_id)
         if appointment is None or appointment.patient_id != patient_id:
             raise AppointmentNotFoundError(appointment_id)
-        return await self.repository.cancel(appointment)
+
+        cancelled = await self.repository.cancel(appointment)
+        await self.arq_redis.enqueue_job("notify_doctor_of_cancellation", cancelled.id)
+        return cancelled
