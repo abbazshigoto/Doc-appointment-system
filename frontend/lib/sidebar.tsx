@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Avatar } from "./avatar";
 import { useAuth } from "./auth-context";
+import { ConfirmDialog } from "./confirm-dialog";
 
 export interface NavLink {
   href: string;
@@ -22,6 +24,7 @@ export function Sidebar({
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   function handleLogout() {
     logout();
@@ -81,10 +84,21 @@ export function Sidebar({
             </span>
           </div>
         )}
-        <button className="sidebar-logout" onClick={handleLogout}>
+        <button className="sidebar-logout" onClick={() => setConfirmingLogout(true)}>
           Log out
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmingLogout}
+        title="Log out?"
+        message="You'll need to sign in again to access your account."
+        confirmLabel="Log out"
+        cancelLabel="Cancel"
+        danger
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmingLogout(false)}
+      />
     </aside>
   );
 }

@@ -10,6 +10,15 @@ from alembic import context
 from app.core.config import get_settings
 from app.core.database import Base
 
+# Import all model modules so they register with Base.metadata before
+# autogenerate/check inspect it - importing Base alone isn't enough since
+# nothing else in this script touches the modules that define the tables.
+from app.modules.appointments import models as appointments_models  # noqa: F401
+from app.modules.availability import models as availability_models  # noqa: F401
+from app.modules.doctors import models as doctors_models  # noqa: F401
+from app.modules.notifications import models as notifications_models  # noqa: F401
+from app.modules.users import models as users_models  # noqa: F401
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
