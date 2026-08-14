@@ -4,6 +4,7 @@ import { useEffect, useState, type SubmitEvent } from "react";
 import { ApiError, createAvailabilityWindow, deleteAvailabilityWindow, listMyAvailability } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { ConfirmDialog } from "@/lib/confirm-dialog";
+import { NoDoctorProfileNotice } from "@/lib/no-doctor-profile-notice";
 import type { AvailabilityWindowResponse } from "@/lib/types";
 
 function WindowCardSkeleton() {
@@ -21,6 +22,7 @@ function AvailabilityManager() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [needsProfile, setNeedsProfile] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AvailabilityWindowResponse | null>(null);
@@ -29,7 +31,13 @@ function AvailabilityManager() {
     if (!token) return;
     listMyAvailability(token)
       .then(setWindows)
-      .catch(() => setError("Could not load your availability"));
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 404) {
+          setNeedsProfile(true);
+        } else {
+          setError("Could not load your availability");
+        }
+      });
   }, [token]);
 
   async function handleAdd(event: SubmitEvent) {
@@ -66,6 +74,8 @@ function AvailabilityManager() {
       setPendingDelete(null);
     }
   }
+
+  if (needsProfile) return <NoDoctorProfileNotice />;
 
   return (
     <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "flex-start" }}>

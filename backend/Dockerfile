@@ -9,6 +9,10 @@ COPY . .
 
 RUN chmod +x docker-entrypoint.sh
 
+RUN groupadd --system app && useradd --system --gid app app \
+    && chown -R app:app /app
+USER app
+
 EXPOSE 8000
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=5 \

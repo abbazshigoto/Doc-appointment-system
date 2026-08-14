@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { listMyDoctorAppointments } from "@/lib/api";
+import { ApiError, listMyDoctorAppointments } from "@/lib/api";
 import { statusBadge } from "@/lib/appointment-status";
 import { useAuth } from "@/lib/auth-context";
 import { Avatar } from "@/lib/avatar";
+import { NoDoctorProfileNotice } from "@/lib/no-doctor-profile-notice";
 import type { AppointmentResponse } from "@/lib/types";
 
 function AppointmentCardSkeleton() {
@@ -51,12 +52,19 @@ function AppointmentList() {
   const { token } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentResponse[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsProfile, setNeedsProfile] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     listMyDoctorAppointments(token)
       .then(setAppointments)
-      .catch(() => setError("Could not load your appointments"));
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 404) {
+          setNeedsProfile(true);
+        } else {
+          setError("Could not load your appointments");
+        }
+      });
   }, [token]);
 
   const { upcoming, other } = useMemo(() => {
@@ -70,6 +78,7 @@ function AppointmentList() {
     return { upcoming, other };
   }, [appointments]);
 
+  if (needsProfile) return <NoDoctorProfileNotice />;
   if (error) return <div className="error-banner">{error}</div>;
 
   if (appointments === null) {
