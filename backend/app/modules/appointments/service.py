@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-from arq.connections import ArqRedis
 from sqlalchemy.exc import IntegrityError
 
 from app.modules.appointments.hold_store import AppointmentHoldStore
@@ -9,8 +8,13 @@ from app.modules.appointments.repository import AppointmentRepository
 from app.modules.appointments.schemas import AppointmentBookRequest
 from app.modules.availability.repository import AvailabilityRepository
 from app.modules.doctors.repository import DoctorRepository
+from app.modules.notifications.service import NotificationService
 
 APPOINTMENT_DURATION = timedelta(minutes=30)
+
+
+def _format_appointment_time(start_time: datetime) -> str:
+    return start_time.strftime("%B %d, %Y at %I:%M %p UTC")
 
 
 class DoctorNotFoundError(Exception):
@@ -52,13 +56,13 @@ class AppointmentService:
         doctor_repository: DoctorRepository,
         availability_repository: AvailabilityRepository,
         hold_store: AppointmentHoldStore,
-        arq_redis: ArqRedis,
+        notification_service: NotificationService,
     ):
         self.repository = repository
         self.doctor_repository = doctor_repository
         self.availability_repository = availability_repository
         self.hold_store = hold_store
-        self.arq_redis = arq_redis
+        self.notification_service = notification_service
 
     async def book_appointment(self, patient_id: int, data: AppointmentBookRequest) -> Appointment:
         doctor = await self.doctor_repository.lock_for_update(data.doctor_id)
@@ -87,7 +91,8 @@ class AppointmentService:
         except IntegrityError as exc:
             raise SlotConflictError(data.doctor_id) from exc
 
-        await self.arq_redis.enqueue_job("notify_doctor_of_booking", created.id)
+        message = f"New appointment with {created.patient.full_name} at {_format_appointment_time(created.start_time)}"
+        await self.notification_service.create_notification(doctor.user_id, message)
         return created
 
     async def hold_slot(self, patient_id: int, doctor_id: int, start_time: datetime) -> None:
@@ -124,5 +129,9 @@ class AppointmentService:
             raise AppointmentNotFoundError(appointment_id)
 
         cancelled = await self.repository.cancel(appointment)
-        await self.arq_redis.enqueue_job("notify_doctor_of_cancellation", cancelled.id)
+
+        doctor = await self.doctor_repository.get_by_id(cancelled.doctor_id)
+        if doctor is not None:
+            message = f"{cancelled.patient.full_name} cancelled their appointment at {_format_appointment_time(cancelled.start_time)}"
+            await self.notification_service.create_notification(doctor.user_id, message)
         return cancelled
