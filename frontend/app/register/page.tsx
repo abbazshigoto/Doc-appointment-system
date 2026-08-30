@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { PasswordInput } from "@/lib/password-input";
 import type { UserRole } from "@/lib/types";
 
 export default function RegisterPage() {
@@ -70,13 +71,12 @@ export default function RegisterPage() {
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               required
               minLength={8}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={setPassword}
               autoComplete="new-password"
             />
           </div>

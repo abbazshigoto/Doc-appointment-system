@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { PasswordInput } from "@/lib/password-input";
 
 export default function LoginPage() {
   const { login, user } = useAuth();
@@ -56,12 +57,11 @@ export default function LoginPage() {
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={setPassword}
               autoComplete="current-password"
             />
           </div>
